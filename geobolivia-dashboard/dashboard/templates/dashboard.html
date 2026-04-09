@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GeoBolivia Mapa</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial; margin: 0; padding: 20px; }
+        #container { display: flex; gap: 20px; }
+        #map { height: 500px; width: 60%; }
+        #panel { width: 35%; }
+        select, button { padding: 10px; margin: 5px; width: 100%; }
+        .grafico { margin-top: 20px; background: #f5f5f5; padding: 15px; }
+        canvas { max-height: 300px; }
+    </style>
+</head>
+<body>
+    <h1>GeoBolivia - Cambio Climático</h1>
+    
+    <div id="container">
+        <div id="map"></div>
+        <div id="panel">
+            <select id="categoria">
+                <option value="agropecuario">Agropecuario</option>
+                <option value="agua">Agua</option>
+                <option value="bosques">Bosques</option>
+            </select>
+            <button onclick="actualizar()">Actualizar</button>
+            
+            <div class="grafico">
+                <canvas id="grafico"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mapa
+        var map = L.map('map').setView([-16.5, -64.5], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+        var chart;
+        
+        function actualizar() {
+            var categoria = document.getElementById('categoria').value;
+            
+            fetch(`/api/indicadores/?categoria=${categoria}`)
+                .then(response => response.json())
+                .then(data => {
+                    var labels = Object.keys(data);
+                    var valores = labels.map(l => {
+                        var sum = data[l].reduce((a,b) => a + b.valor, 0);
+                        return sum / data[l].length;
+                    });
+                    
+                    if (chart) chart.destroy();
+                    
+                    var ctx = document.getElementById('grafico').getContext('2d');
+                    chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: categoria,
+                                data: valores,
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                            }]
+                        }
+                    });
+                });
+        }
+        
+        actualizar();
+    </script>
+</body>
+</html>
