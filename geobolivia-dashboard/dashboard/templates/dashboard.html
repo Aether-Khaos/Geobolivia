@@ -13,10 +13,25 @@
         select, button { padding: 10px; margin: 5px; width: 100%; }
         .grafico { margin-top: 20px; background: #f5f5f5; padding: 15px; }
         canvas { max-height: 300px; }
+
+        .aviso-publico {
+            background: #e8f4fd;
+            border: 1px solid #b6d9f2;
+            color: #1d4e89;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
     <h1>GeoBolivia - Cambio Climático</h1>
+
+    {% if acceso_publico %}
+    <div class="aviso-publico">
+        Acceso público: este dashboard puede visualizarse sin autenticación.
+    </div>
+    {% endif %}
     
     <div id="container">
         <div id="map"></div>
@@ -35,7 +50,6 @@
     </div>
 
     <script>
-        // Mapa
         var map = L.map('map').setView([-16.5, -64.5], 6);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '© OpenStreetMap'
@@ -51,7 +65,7 @@
                 .then(data => {
                     var labels = Object.keys(data);
                     var valores = labels.map(l => {
-                        var sum = data[l].reduce((a,b) => a + b.valor, 0);
+                        var sum = data[l].reduce((a, b) => a + b.valor, 0);
                         return sum / data[l].length;
                     });
                     
