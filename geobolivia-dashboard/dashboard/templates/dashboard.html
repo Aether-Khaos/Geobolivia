@@ -36,6 +36,9 @@
     <div id="container">
         <div id="map"></div>
         <div id="panel">
+            <input type="text" id="busqueda" placeholder="Buscar municipio..." />
+            <button onclick="buscar()">Buscar</button>
+            <ul id="resultados"></ul>
             <select id="categoria">
                 <option value="agropecuario">Agropecuario</option>
                 <option value="agua">Agua</option>
@@ -87,6 +90,43 @@
         }
         
         actualizar();
+        async function buscar() {
+    let texto = document.getElementById("busqueda").value;
+
+    let res = await fetch(`/buscar/?q=${texto}`);
+    let data = await res.json();
+
+    let lista = document.getElementById("resultados");
+    lista.innerHTML = "";
+
+    data.forEach(item => {
+        let li = document.createElement("li");
+        li.textContent = item.municipio;
+
+        li.onclick = function() {
+            centrarMapa(item.municipio);
+        };
+
+        lista.appendChild(li);
+    });
+}
+    const coordenadas = {
+    "La Paz": [-16.5, -68.1],
+    "Santa Cruz": [-17.8, -63.2],
+    "Cochabamba": [-17.4, -66.1],
+    "Oruro": [-17.9, -67.1],
+    "Potosí": [-19.6, -65.8]
+};
+
+function centrarMapa(nombre) {
+    let coords = coordenadas[nombre];
+
+    if (coords) {
+        map.setView(coords, 8);
+    } else {
+        alert("Ubicación no encontrada");
+    }
+}
     </script>
 </body>
 </html>

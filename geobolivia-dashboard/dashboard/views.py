@@ -41,4 +41,15 @@ def api_indicadores(request):
             'valor': d.valor
         })
 
-    return JsonResponse(resultado)
+    
+        return JsonResponse(resultado)
+
+def buscar_municipio(request):
+    texto = request.GET.get('q', '')
+
+    resultados = IndicadorClimatico.objects.filter(
+        municipio__icontains=texto
+    ).values('municipio').distinct()
+
+    data = list(resultados)
+    return JsonResponse(data, safe=False)
