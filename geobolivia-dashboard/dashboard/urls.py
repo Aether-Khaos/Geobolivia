@@ -10,4 +10,6 @@ urlpatterns = [
     
     # Ruta para los datos de los indicadores
     path('api/indicadores/', views.api_indicadores, name='api_indicadores'),
+
+    path('buscar/', views.buscar_municipio, name='buscar_municipio'),
 ]
