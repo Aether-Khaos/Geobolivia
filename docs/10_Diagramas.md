@@ -7,7 +7,7 @@ https://lucid.app/lucidchart/cf674adf-a6be-4817-ae9f-8c8d1e61642b/edit?viewport_
 ## Diagrama de clases
 https://drive.google.com/file/d/1sbXCxitjQ8cCh3cfmy8DRwezEOAev11-/view?usp=sharing
 ## Diagramas de transicion de estados
-
+https://lucid.app/lucidchart/d3dee6b0-0620-49b1-8aa8-891a89090d7d/edit?viewport_loc=15%2C1198%2C2517%2C2007%2C0_0&invitationId=inv_c68ff43b-04e3-4adb-b2b7-1ac2b0142374
 ## Diagrama de actividad
 https://lucid.app/lucidchart/b97a43cf-05da-4c68-8b4b-97498c913e26/edit?invitationId=inv_b1e1a123-9159-410e-8551-1f3812012aed
 
