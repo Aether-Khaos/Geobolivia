@@ -24,6 +24,10 @@ La documentación fue organizada para separar claramente:
 | [04_Restricciones.md](docs/04_Restricciones.md) | Restricciones de tiempo, presupuesto, técnicas, contractuales y legales |
 | [05_Historias_de_Usuario.md](docs/05_Historias_de_Usuario.md) | Historias de usuario, trazabilidad RF → HU y priorización del backlog |
 | [06_Prototipo_y_Validacion.md](docs/06_Prototipo_y_Validacion.md) | Flujo seleccionado para prototipo, justificación y criterios de validación |
+| [07_Arquitectura.md](docs/07_Arquitectura.md) | Arquitectura del sistema, stack tecnológico y patrones de diseño |
+| [08_Pipeline_CI_CD.md](docs/08_Pipeline_CI_CD.md) | Pipeline CI/CD, entornos y estrategia de despliegue |
+| [09_Modelo_de_Datos.md](docs/09_Modelo_de_Datos.md) | Modelo de datos PostgreSQL/PostGIS |
+| [10_Diagramas.md](docs/10_Diagramas.md) | Diagramas de casos de uso, clases, actividad y comunicación |
 
 
 ## Base documental
