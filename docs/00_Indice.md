@@ -57,3 +57,28 @@ La estructura del documento fue reorganizada para separar claramente:
 - restricciones del proyecto
 - historias de usuario
 - prototipo y validación visual
+### 7. Arquitectura ([07_Arquitectura.md](07_Arquitectura.md))
+- Enfoque general
+- Patrón arquitectónico
+- Stack tecnológico
+- Flujo de datos
+- Seguridad
+
+### 8. Pipeline CI/CD ([08_Pipeline_CI_CD.md](08_Pipeline_CI_CD.md))
+- Herramienta sugerida
+- Entornos
+- Pasos del pipeline
+- Estrategia de despliegue
+- Prevención de errores
+
+### 9. Modelo de Datos ([09_Modelo_de_Datos.md](09_Modelo_de_Datos.md))
+- Tabla: capa_geo
+- Tabla: carga_log
+- Tabla: usuario
+- Tabla: metadato
+
+### 10. Diagramas ([10_Diagramas.md](10_Diagramas.md))
+- Diagrama de casos de uso
+- Diagrama de clases
+- Diagrama de actividad
+- Diagrama de comunicación
