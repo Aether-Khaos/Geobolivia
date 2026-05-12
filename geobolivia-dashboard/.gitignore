@@ -6,3 +6,18 @@ venv/
 db.sqlite3
 .DS_Store
 *.log
+# SonarQube
+.scannerwork/
+sonar-scanner-*/
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Env
+.env
+venv/
