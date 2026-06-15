@@ -1,50 +1,395 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GeoBolivia Mapa</title>
+    <title>GeoBolivia - Cambio Climático + NASA</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial; margin: 0; padding: 20px; }
-        #container { display: flex; gap: 20px; }
-        #map { height: 500px; width: 60%; }
-        #panel { width: 35%; }
-        select, button { padding: 10px; margin: 5px; width: 100%; }
-        .grafico { margin-top: 20px; background: #f5f5f5; padding: 15px; }
-        canvas { max-height: 300px; }
-
-        .aviso-publico {
-            background: #e8f4fd;
-            border: 1px solid #b6d9f2;
-            color: #1d4e89;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
             padding: 10px;
-            margin-bottom: 15px;
+            min-height: 100vh;
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        #container {
+            display: flex;
+            gap: 10px;
+            height: 100vh;
+            margin-top: 0;
+        }
+        
+        #map {
+            height: calc(100vh - 20px);
+            width: 75%;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #1a1a2e;
+        }
+        
+        #panel {
+            width: 24%;
+            background: rgba(30, 30, 40, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            height: calc(100vh - 20px);
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #1e1e2e;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .grafico {
+            margin-top: 15px;
+            background: #1e1e2e;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        canvas {
+            max-height: 250px;
+            width: 100%;
+        }
+        
+        .layer-control {
+            background: #1e1e2e;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .layer-control label {
+            display: inline-block;
+            margin: 5px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .layer-control input {
+            width: auto;
+            margin-right: 3px;
+        }
+        
+        .evento-card {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .evento-card:hover {
+            transform: translateX(5px);
+            background: rgba(102, 126, 234, 0.2);
+        }
+        
+        .evento-titulo {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .evento-categoria {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .evento-fecha {
+            font-size: 10px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .evento-incendio { border-left-color: #f97316; }
+        .evento-inundacion { border-left-color: #3b82f6; }
+        .evento-tormenta { border-left-color: #eab308; }
+        .evento-volcan { border-left-color: #ef4444; }
+        .evento-default { border-left-color: #667eea; }
+        
+        .loading-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .menu-container {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+        }
+        
+        .menu-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(30, 30, 40, 0.95);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #444;
+        }
+        
+        .menu-btn span {
+            width: 25px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .menu-btn.open span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+        
+        .menu-btn.open span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .menu-btn.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+        
+        .menu-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            min-width: 220px;
+            background: rgba(30, 30, 40, 0.98);
+            border-radius: 12px;
+            border: 1px solid #444;
+            overflow: hidden;
+            transform: scale(0);
+            opacity: 0;
+            transform-origin: top right;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .menu-panel.open {
+            transform: scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .user-info {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #444;
+        }
+        
+        .user-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .menu-options {
+            padding: 8px 0;
+        }
+        
+        .menu-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .menu-option:hover {
+            background: rgba(102, 126, 234, 0.2);
+            padding-left: 20px;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+        
+        .stat-card {
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            margin: 8px 0;
             border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .nasa-badge {
+            background: #0d3b66;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        /* Estilos para metadatos */
+        .metadata-item {
+            border-bottom: 1px solid #333;
+            padding: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .metadata-item:hover {
+            background: rgba(102,126,234,0.2);
+            transform: translateX(3px);
+        }
+        
+        @media (max-width: 768px) {
+            #map { width: 100%; height: 50vh; }
+            #panel { width: 100%; height: auto; max-height: 40vh; }
+            #container { flex-direction: column; }
+            h1 { font-size: 1em; position: relative; margin-bottom: 10px; }
         }
     </style>
 </head>
-<body>
-    <h1>GeoBolivia - Cambio Climático</h1>
+<body data-is-admin="{% if user.is_staff %}true{% else %}false{% endif %}">
+    <h1>🌍 GeoBolivia + NASA Earth Observatory</h1>
 
-    {% if acceso_publico %}
-    <div class="aviso-publico">
-        Acceso público: este dashboard puede visualizarse sin autenticación.
+    <div id="loadingMsg" class="loading-indicator">🔄 Cargando...</div>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="menu-container">
+        <div class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="menu-panel" id="menuPanel">
+            {% if user_logged_in %}
+                <div class="user-info">
+                    <div style="font-size: 40px;">👤</div>
+                    <div class="user-name">{{ username }}</div>
+                </div>
+                <div class="menu-options">
+                    <a href="{% url 'subir_datos' %}" class="menu-option">📤 Subir Datos</a>
+                    <a href="{% url 'descargar_datos' %}" class="menu-option">📥 Descargar Datos</a>
+                    <a href="{% url 'logout' %}" class="menu-option" style="color: #f87171;">🚪 Cerrar Sesión</a>
+                </div>
+            {% else %}
+                <div class="user-info">
+                    <div style="font-size: 40px;">👋</div>
+                    <div class="user-name">Visitante</div>
+                </div>
+                <div class="menu-options">
+                    <a href="{% url 'login' %}" class="menu-option">🔐 Iniciar Sesión</a>
+                    <a href="{% url 'registro' %}" class="menu-option">📝 Registrarse</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
     
     <div id="container">
         <div id="map"></div>
         <div id="panel">
-            <input type="text" id="busqueda" placeholder="Buscar municipio..." />
-            <button onclick="buscar()">Buscar</button>
-            <ul id="resultados"></ul>
-            <select id="categoria">
-                <option value="agropecuario">Agropecuario</option>
-                <option value="agua">Agua</option>
-                <option value="bosques">Bosques</option>
+            <div class="nasa-badge">🚀 Datos en tiempo real de la NASA EONET</div>
+            
+            <div class="layer-control">
+                <strong>🗺️ Capas del mapa:</strong><br>
+                <label><input type="checkbox" id="toggleDepartamentos" checked> Departamentos</label>
+                <label><input type="checkbox" id="toggleCapitales" checked> Capitales</label>
+                <label><input type="checkbox" id="toggleEventosNASA" checked> 🌍 Eventos Naturales (NASA)</label>
+                <label><input type="checkbox" id="toggleLagos"> Lagos</label>
+                <label><input type="checkbox" id="toggleRios"> Ríos</label>
+                <label><input type="checkbox" id="toggleBosques"> Bosques</label>
+                <label><input type="checkbox" id="toggleAgropecuario"> Agropecuario</label>
+            </div>
+            
+            <!-- PANEL DE METADATOS -->
+            <div class="layer-control">
+                <strong>📋 METADATOS DE CAPAS:</strong>
+                <div id="metadatosLista" style="font-size: 11px; max-height: 150px; overflow-y: auto; margin-top: 8px;">
+                    <div style="text-align:center; padding:10px;">🔄 Cargando metadatos...</div>
+                </div>
+            </div>
+            
+            <!-- PANEL DE EVENTOS NASA -->
+            <div id="eventosLista">
+                <div style="text-align:center; padding:10px;">🔄 Cargando eventos de la NASA...</div>
+            </div>
+            
+            <select id="categoriaSelect">
+                <option value="agropecuario">🌾 Agropecuario</option>
+                <option value="agua">💧 Agua</option>
+                <option value="bosques">🌲 Bosques</option>
             </select>
-            <button onclick="actualizar()">Actualizar</button>
+            
+            <button onclick="actualizarGrafico()">📊 Actualizar Gráfico</button>
+            
+            <div id="statsPanel"></div>
             
             <div class="grafico">
                 <canvas id="grafico"></canvas>
@@ -53,80 +398,327 @@
     </div>
 
     <script>
-        var map = L.map('map').setView([-16.5, -64.5], 6);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        let map, chart, eventosLayer;
+        let eventosData = [];
         
-        var chart;
+        let layers = {
+            departamentos: null, capitales: null, lagos: null,
+            rios: null, bosques: null, agropecuario: null, educativas: null,
+            eventos: null
+        };
         
-        function actualizar() {
-            var categoria = document.getElementById('categoria').value;
-            
-            fetch(`/api/indicadores/?categoria=${categoria}`)
-                .then(response => response.json())
-                .then(data => {
-                    var labels = Object.keys(data);
-                    var valores = labels.map(l => {
-                        var sum = data[l].reduce((a, b) => a + b.valor, 0);
-                        return sum / data[l].length;
-                    });
-                    
-                    if (chart) chart.destroy();
-                    
-                    var ctx = document.getElementById('grafico').getContext('2d');
-                    chart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: categoria,
-                                data: valores,
-                                backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                            }]
-                        }
-                    });
-                });
+        let loadingLayers = {};
+        
+        const coloresEventos = {
+            'Wildfires': '#f97316',
+            'Floods': '#3b82f6',
+            'Storms': '#eab308',
+            'Volcanoes': '#ef4444',
+            'Sea and Lake Ice': '#06b6d4',
+            'Drought': '#f59e0b',
+            'Landslides': '#92400e'
+        };
+        
+        function initMap() {
+            map = L.map('map').setView([-16.5, -64.5], 6);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© NASA Earth Observatory | OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
         }
         
-        actualizar();
-        async function buscar() {
-    let texto = document.getElementById("busqueda").value;
-
-    let res = await fetch(`/buscar/?q=${texto}`);
-    let data = await res.json();
-
-    let lista = document.getElementById("resultados");
-    lista.innerHTML = "";
-
-    data.forEach(item => {
-        let li = document.createElement("li");
-        li.textContent = item.municipio;
-
-        li.onclick = function() {
-            centrarMapa(item.municipio);
-        };
-
-        lista.appendChild(li);
-    });
-}
-    const coordenadas = {
-    "La Paz": [-16.5, -68.1],
-    "Santa Cruz": [-17.8, -63.2],
-    "Cochabamba": [-17.4, -66.1],
-    "Oruro": [-17.9, -67.1],
-    "Potosí": [-19.6, -65.8]
-};
-
-function centrarMapa(nombre) {
-    let coords = coordenadas[nombre];
-
-    if (coords) {
-        map.setView(coords, 8);
-    } else {
-        alert("Ubicación no encontrada");
-    }
-}
+        function mostrarLoading(mostrar, texto = 'Cargando...') {
+            const el = document.getElementById('loadingMsg');
+            if (mostrar) {
+                el.textContent = '🔄 ' + texto;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+        
+        function obtenerNombre(feature, layerName) {
+            if (layerName === 'capitales') {
+                return feature.properties?.nombre || 'Capital';
+            }
+            return feature.properties?.NOMBRE || 
+                   feature.properties?.nombre || 
+                   feature.properties?.MUNICIPIO || 
+                   feature.properties?.name || 
+                   layerName;
+        }
+        
+        // ===== FUNCIÓN PARA CARGAR METADATOS =====
+        async function cargarMetadatos() {
+            try {
+                let response = await fetch('/api/metadatos/');
+                let metadatos = await response.json();
+                
+                const container = document.getElementById('metadatosLista');
+                if (!container) return;
+                
+                if (!metadatos || metadatos.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding:10px; color:#888;">📭 No hay metadatos disponibles</div>';
+                    return;
+                }
+                
+                let html = '';
+                metadatos.forEach(m => {
+                    let icono = '🗺️';
+                    if (m.nombre_capa === 'bosques') icono = '🌲';
+                    else if (m.nombre_capa === 'rios') icono = '💧';
+                    else if (m.nombre_capa === 'lagos') icono = '💙';
+                    else if (m.nombre_capa === 'capitales') icono = '🏛️';
+                    else if (m.nombre_capa === 'departamentos') icono = '📌';
+                    else if (m.nombre_capa === 'agropecuario') icono = '🌾';
+                    
+                    html += `
+                        <div class="metadata-item" onclick="alert('📋 ${m.titulo}\\n\\n📝 ${m.descripcion || 'Sin descripción'}\\n🏛️ Fuente: ${m.fuente}\\n📅 Publicación: ${m.fecha_publicacion}\\n👤 Responsable: ${m.responsable}')">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><strong>${icono} ${m.titulo}</strong></span>
+                                <span style="font-size: 10px; color: #4ade80;">📅 ${m.fecha_publicacion}</span>
+                            </div>
+                            <div style="font-size: 10px; color: #888;">
+                                🔍 ${m.resolucion || 'No especificada'} | 👤 ${m.responsable || 'GeoBolivia'}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch(e) {
+                console.error('Error cargando metadatos:', e);
+                const container = document.getElementById('metadatosLista');
+                if (container) {
+                    container.innerHTML = '<div style="color:#f87171; text-align:center; padding:10px;">❌ Error al cargar metadatos</div>';
+                }
+            }
+        }
+        
+        async function cargarEventosNASA() {
+            mostrarLoading(true, 'Obteniendo datos de la NASA...');
+            
+            try {
+                let response = await fetch('/api/eventos-nasa/');
+                let eventos = await response.json();
+                eventosData = eventos;
+                
+                if (layers.eventos) {
+                    map.removeLayer(layers.eventos);
+                }
+                
+                let markers = [];
+                eventos.forEach(evento => {
+                    if (evento.latitude && evento.longitude && evento.title !== 'No hay eventos activos en Bolivia') {
+                        let icono = L.divIcon({
+                            html: getIconoPorCategoria(evento.category),
+                            iconSize: [30, 30],
+                            className: 'evento-marker'
+                        });
+                        
+                        let marker = L.marker([evento.latitude, evento.longitude], { icon: icono })
+                            .bindPopup(`<strong>${evento.title}</strong><br>${evento.category || 'Evento natural'}<br>${evento.date ? new Date(evento.date).toLocaleDateString() : ''}`);
+                        markers.push(marker);
+                    }
+                });
+                
+                layers.eventos = L.layerGroup(markers);
+                actualizarListaEventos(eventos);
+                
+                if (document.getElementById('toggleEventosNASA').checked) {
+                    layers.eventos.addTo(map);
+                }
+                
+            } catch(e) {
+                console.error('Error cargando eventos NASA:', e);
+                document.getElementById('eventosLista').innerHTML = `<div style="color:#f87171; text-align:center; padding:10px;">❌ Error al cargar eventos</div>`;
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+        
+        function getIconoPorCategoria(categoria) {
+            const iconos = {
+                'Wildfires': '🔥', 'Floods': '💧', 'Storms': '🌪️',
+                'Volcanoes': '🌋', 'Sea and Lake Ice': '🧊', 'Drought': '🏜️', 'Landslides': '⛰️'
+            };
+            return iconos[categoria] || '🛰️';
+        }
+        
+        function getClaseEvento(categoria) {
+            const clases = {
+                'Wildfires': 'evento-incendio', 'Floods': 'evento-inundacion',
+                'Storms': 'evento-tormenta', 'Volcanoes': 'evento-volcan'
+            };
+            return clases[categoria] || 'evento-default';
+        }
+        
+        function actualizarListaEventos(eventos) {
+            const container = document.getElementById('eventosLista');
+            
+            if (!eventos || eventos.length === 0 || eventos[0].title === 'No hay eventos activos en Bolivia') {
+                container.innerHTML = `<div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 24px;">🛰️</div>
+                    <div style="font-size: 12px;">No hay eventos naturales activos en Bolivia</div>
+                </div>`;
+                return;
+            }
+            
+            let html = '<strong>🛰️ Eventos activos detectados:</strong>';
+            eventos.forEach(evento => {
+                if (evento.title !== 'No hay eventos activos en Bolivia') {
+                    let clase = getClaseEvento(evento.category);
+                    html += `<div class="evento-card ${clase}" onclick="centrarEnEvento(${evento.latitude}, ${evento.longitude})">
+                        <div class="evento-titulo">${getIconoPorCategoria(evento.category)} ${evento.title}</div>
+                        <div class="evento-categoria">${evento.category || 'Evento natural'}</div>
+                    </div>`;
+                }
+            });
+            container.innerHTML = html;
+        }
+        
+        function centrarEnEvento(lat, lon) {
+            map.setView([lat, lon], 8);
+        }
+        
+        async function cargarGeoJSON(url, layerName, style) {
+            if (layers[layerName] !== null) {
+                if (!map.hasLayer(layers[layerName])) {
+                    layers[layerName].addTo(map);
+                }
+                return layers[layerName];
+            }
+            
+            if (loadingLayers[layerName]) return null;
+            loadingLayers[layerName] = true;
+            mostrarLoading(true, `Cargando ${layerName}...`);
+            
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                layers[layerName] = L.geoJSON(data, {
+                    style: style,
+                    pointToLayer: style.pointToLayer,
+                    onEachFeature: function(feature, layer) {
+                        let nombre = obtenerNombre(feature, layerName);
+                        layer.bindPopup(`<b>${nombre}</b>`);
+                    }
+                });
+                layers[layerName].addTo(map);
+            } catch(e) {
+                console.error(`Error cargando ${layerName}:`, e);
+            } finally {
+                loadingLayers[layerName] = false;
+                mostrarLoading(false);
+            }
+            return layers[layerName];
+        }
+        
+        async function cargarCapasIniciales() {
+            await cargarGeoJSON('/static/dashboard/geojson/departamentos.geojson', 'departamentos', 
+                { color: '#667eea', weight: 2, fillOpacity: 0.2 });
+            await cargarGeoJSON('/static/dashboard/geojson/capitales.geojson', 'capitales',
+                { pointToLayer: (f, latlng) => L.marker(latlng, { icon: L.divIcon({ html: '🏛️', iconSize: [30, 30] }) }) });
+            await cargarEventosNASA();
+        }
+        
+        function setupLayerControls() {
+            const controls = [
+                { id: 'toggleDepartamentos', layer: 'departamentos', url: '/static/dashboard/geojson/departamentos.geojson', 
+                  style: { color: '#667eea', weight: 2, fillOpacity: 0.2 } },
+                { id: 'toggleCapitales', layer: 'capitales', url: '/static/dashboard/geojson/capitales.geojson',
+                  style: { pointToLayer: (f, latlng) => L.marker(latlng, { icon: L.divIcon({ html: '🏛️', iconSize: [30, 30] }) }) } },
+                { id: 'toggleEventosNASA', layer: 'eventos' },
+                { id: 'toggleLagos', layer: 'lagos', url: '/static/dashboard/geojson/lagos.geojson',
+                  style: { color: '#3b82f6', weight: 1, fillOpacity: 0.5 } },
+                { id: 'toggleRios', layer: 'rios', url: '/static/dashboard/geojson/rios.geojson',
+                  style: { color: '#60a5fa', weight: 1.5 } },
+                { id: 'toggleBosques', layer: 'bosques', url: '/static/dashboard/geojson/bosques.geojson',
+                  style: { color: '#22c55e', weight: 1, fillOpacity: 0.3 } },
+                { id: 'toggleAgropecuario', layer: 'agropecuario', url: '/static/dashboard/geojson/agropecuario.geojson',
+                  style: { color: '#eab308', weight: 1, fillOpacity: 0.3 } }
+            ];
+            
+            controls.forEach(control => {
+                const checkbox = document.getElementById(control.id);
+                if (checkbox) {
+                    checkbox.addEventListener('change', async function(e) {
+                        if (control.layer === 'eventos') {
+                            if (e.target.checked && layers.eventos) layers.eventos.addTo(map);
+                            else if (layers.eventos) map.removeLayer(layers.eventos);
+                        } else if (e.target.checked) {
+                            await cargarGeoJSON(control.url, control.layer, control.style);
+                        } else if (layers[control.layer]) {
+                            map.removeLayer(layers[control.layer]);
+                        }
+                    });
+                }
+            });
+        }
+        
+        async function actualizarGrafico() {
+            const categoria = document.getElementById('categoriaSelect').value;
+            const statsPanel = document.getElementById('statsPanel');
+            statsPanel.innerHTML = '<div style="text-align:center; padding:15px;">🔄 Cargando...</div>';
+            
+            try {
+                let response = await fetch(`/api/indicadores/?categoria=${categoria}`);
+                let data = await response.json();
+                let labels = Object.keys(data);
+                let valores = labels.map(l => data[l]);
+                
+                if (labels.length === 0) {
+                    statsPanel.innerHTML = '<div style="color:#f87171; text-align:center;">⚠️ No hay datos</div>';
+                    if (chart) chart.destroy();
+                    return;
+                }
+                
+                if (chart) chart.destroy();
+                let ctx = document.getElementById('grafico').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: `${categoria.toUpperCase()} - Promedio`, data: valores, backgroundColor: 'rgba(102,126,234,0.7)', borderRadius: 5 }] },
+                    options: { responsive: true, plugins: { legend: { labels: { color: '#e0e0e0' } } },
+                        scales: { y: { ticks: { color: '#e0e0e0' }, grid: { color: '#333' } },
+                                  x: { ticks: { color: '#e0e0e0', rotation: 45 }, grid: { color: '#333' } } }
+                    }
+                });
+                
+                let promedio = valores.reduce((a,b) => a + b, 0) / valores.length;
+                let max = Math.max(...valores);
+                let min = Math.min(...valores);
+                statsPanel.innerHTML = `
+                    <div class="stat-card"><div class="stat-label">📊 Categoría</div><div class="stat-value">${categoria.toUpperCase()}</div></div>
+                    <div class="stat-card"><div class="stat-label">📈 Promedio</div><div class="stat-value">${promedio.toFixed(2)}</div></div>
+                    <div class="stat-card"><div class="stat-label">📈 Máximo</div><div class="stat-value">${max.toFixed(2)}</div></div>
+                    <div class="stat-card"><div class="stat-label">📉 Mínimo</div><div class="stat-value">${min.toFixed(2)}</div></div>
+                    <div class="stat-card"><div class="stat-label">🔢 Indicadores</div><div class="stat-value">${valores.length}</div></div>
+                `;
+            } catch(e) {
+                statsPanel.innerHTML = `<div style="color:#f87171; text-align:center;">❌ Error</div>`;
+            }
+        }
+        
+        function toggleMenu() {
+            document.getElementById('menuBtn').classList.toggle('open');
+            document.getElementById('menuPanel').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+        
+        window.centrarEnEvento = centrarEnEvento;
+        
+        async function init() {
+            console.log('🚀 Iniciando GeoBolivia...');
+            initMap();
+            await cargarCapasIniciales();
+            setupLayerControls();
+            await cargarMetadatos();
+            await actualizarGrafico();
+            console.log('✅ GeoBolivia listo');
+        }
+        
+        init();
     </script>
 </body>
 </html>
